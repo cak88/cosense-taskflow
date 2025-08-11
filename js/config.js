@@ -9,8 +9,8 @@ const DEFAULT_CONFIG = {
     
     // API設定
     api: {
-        enableAutoFetch: true,
-        fetchInterval: 300, // 秒
+        enableAutoFetch: false,
+        fetchInterval: 900, // 秒
         authToken: '',
         enableInitialFetch: true // 初回読み込み時のデータ取得
     },
@@ -27,8 +27,8 @@ const DEFAULT_CONFIG = {
     export: {
         filenameFormat: 'PROJECT-export-YYYY-MM-DD',
         destinationFolder: '',
-        fetchBeforeExport: false,
-        openImportPage: true
+        fetchBeforeExport: true,
+        openImportPage: false
     }
 };
 
