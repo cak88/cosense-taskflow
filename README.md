@@ -1,182 +1,182 @@
 # Cosense Taskflow
 
-A web application for visualizing and editing Scrapbox task data in an interactive kanban-style interface.
+Scrapboxのタスクデータをインタラクティブなかんばん風インターフェースで可視化・編集するWebアプリケーション。
 
-## Overview
+## 概要
 
-Cosense Taskflow loads JSON data exported from Scrapbox and displays task information in an interactive kanban-style interface. You can edit tasks directly in the interface and export the changes back to Scrapbox format, enabling bidirectional task management.
+Cosense TaskflowはScrapboxからエクスポートしたJSONデータを読み込み、タスク情報をインタラクティブなかんばん風インターフェースで表示します。インターフェース上でタスクを直接編集し、変更をScrapbox形式で再エクスポートすることで、双方向のタスク管理を実現します。
 
-## Features
+## 機能
 
-✅ **Scrapbox Data Loading**
-- Load JSON files via drag & drop or file selection
-- Automatic parsing of Scrapbox notation to extract task information
-- Real-time API integration with Scrapbox backup endpoints
+✅ **Scrapboxデータの読み込み**
+- ドラッグ&ドロップまたはファイル選択によるJSONファイルの読み込み
+- Scrapbox記法の自動パースによるタスク情報の抽出
+- ScrapboxバックアップエンドポイントとのリアルタイムAPI連携
 
-**Task Recognition**:
-- Pages containing `[leaves.icon]` are recognized as tasks
-- Pages with `#Exclude` or `[Exclude]` tags are excluded
-- Configurable tag recognition settings
+**タスク認識**:
+- `[leaves.icon]`を含むページをタスクとして認識
+- `#Exclude`または`[Exclude]`タグがあるページは除外
+- 設定可能なタグ認識設定
 
-✅ **3-Level Responsive Design**
-- **Small screens (<512px)**: Ultra-compact card format
-- **Medium screens (512px-1024px)**: Card format with start/due dates
-- **Desktop (1025px+)**: Horizontal list format
-- Highlight display for high importance/urgency tasks
+✅ **3段階レスポンシブデザイン**
+- **小画面 (<512px)**: 超コンパクトカード形式
+- **中画面 (512px-1024px)**: 開始日・期限日付きカード形式
+- **デスクトップ (1025px+)**: 横並びリスト形式
+- 重要度・緊急度の高いタスクのハイライト表示
 
-✅ **Advanced Filtering & Sorting**
-- Filter by project, status, stage, and assignee
-- Smart sort (due date → importance/urgency → status)
-  - **Level 1: Due date order** (no due date = lowest priority)
-  - **Level 2: Importance/urgency** (#Importance_high, #Urgency_high, [Importance_high], [Urgency_high])
-  - **Level 3: Status order** (inProgress → waiting → review → notStarted → completed)
-  - **Level 4: Fallback** (updated date, newest first)
-- Show/hide completed and inactive tasks
-- Project-specific filtering including \"No Project\" option
+✅ **高度なフィルタリング＆ソート**
+- プロジェクト、ステータス、ステージ、担当者でフィルタリング
+- スマートソート（期限日 → 重要度・緊急度 → ステータス）
+  - **レベル1: 期限日順**（期限日なし = 最低優先度）
+  - **レベル2: 重要度・緊急度**（#Importance_high, #Urgency_high, [Importance_high], [Urgency_high]）
+  - **レベル3: ステータス順**（inProgress → waiting → review → notStarted → completed）
+  - **レベル4: フォールバック**（更新日、新しい順）
+- 完了済み・非アクティブタスクの表示/非表示
+- 「プロジェクトなし」オプションを含むプロジェクト別フィルタリング
 
-✅ **Real-time Task Editing**
-- Direct editing of status, stage, and assignee in the interface
-- Visual feedback for modified tasks
-- Conflict detection and resolution for simultaneous edits
-- Automatic backup and caching system
+✅ **リアルタイムタスク編集**
+- インターフェースでのステータス、ステージ、担当者の直接編集
+- 変更されたタスクの視覚的フィードバック
+- 同時編集時の競合検出と解決
+- 自動バックアップ＆キャッシュシステム
 
-✅ **Scrapbox Integration**
-- Real-time data fetching from Scrapbox backup API
-- Intelligent caching system to avoid rate limits
-- Automatic detection of new backups
-- Configurable authentication and project settings
+✅ **Scrapbox連携**
+- ScrapboxバックアップAPIからのリアルタイムデータ取得
+- レート制限を回避するインテリジェントキャッシュシステム
+- 新しいバックアップの自動検出
+- 設定可能な認証とプロジェクト設定
 
-✅ **Export & Import**
-- Export modified tasks to Scrapbox-compatible JSON
-- Flexible filename formats with project name placeholders
-- Optional automatic data fetching before export
-- Direct integration with Scrapbox import interface
+✅ **エクスポート＆インポート**
+- 変更されたタスクのScrapbox互換JSONエクスポート
+- プロジェクト名プレースホルダーをサポートする柔軟なファイル名形式
+- エクスポート前の自動データ取得（オプション）
+- Scrapboxインポートインターフェースとの直接連携
 
-## Getting Started
+## はじめに
 
-### Method 1: File Upload
-1. Export your Scrapbox project data as JSON
-2. Open `index.html` in a web browser
-3. Use the file upload button or drag & drop your JSON file
-4. Tasks will be automatically extracted and displayed
+### 方法1: ファイルアップロード
+1. ScrapboxプロジェクトのデータをJSONでエクスポート
+2. ウェブブラウザで`index.html`を開く
+3. ファイルアップロードボタンまたはドラッグ&ドロップでJSONファイルを読み込み
+4. タスクが自動的に抽出・表示されます
 
-### Method 2: API Integration
-1. Open the settings panel (gear icon)
-2. Configure your Scrapbox project name
-3. Add authentication token if needed
-4. Click \"Fetch Latest Data\" to load tasks directly from Scrapbox
+### 方法2: API連携
+1. 設定パネル（歯車アイコン）を開く
+2. Scrapboxプロジェクト名を設定
+3. 必要に応じて認証トークンを追加
+4. 「最新データを取得」をクリックしてScrapboxから直接タスクを読み込み
 
-### Sample Data
-Try the application with the included `data/sample.json` file to see how it works.
+### サンプルデータ
+付属の`data/sample.json`ファイルを使って動作を確認できます。
 
-## Task Format
+## タスク形式
 
-Tasks are identified by the presence of `[leaves.icon]` in Scrapbox pages. The following formats are recognized:
+タスクはScrapboxページ内の`[leaves.icon]`の存在によって識別されます。以下の形式が認識されます：
 
 ```
-Task Title
+タスクタイトル
 [leaves.icon] [2025-01-01] ID:[task-001]
-[stem.icon][Project Name] [Assigned to user]
+[stem.icon][プロジェクト名] [担当者名]
 [Status_inProgress] [Stage_active]
-Start Date [2025-01-01] Due Date [2025-01-15]
+開始日 [2025-01-01] 期限日 [2025-01-15]
 [Context_work] [Importance_high] [Urgency_normal]
 
-Task description goes here...
+タスクの説明がここに入ります...
 ```
 
-### Status Options
-- `Status_notStarted` - Not started
-- `Status_inProgress` - In progress
-- `Status_waiting` - Waiting (external dependencies)
-- `Status_review` - Under review
-- `Status_completed` - Completed
+### ステータスオプション
+- `Status_notStarted` - 未着手
+- `Status_inProgress` - 進行中
+- `Status_waiting` - 待機中（外部依存）
+- `Status_review` - レビュー中
+- `Status_completed` - 完了
 
-### Stage Options
-- `Stage_active` - Active tasks
-- `Stage_inactive` - Inactive/on-hold tasks (hidden by default)
-- `Stage_someday` - Someday/maybe tasks
-- `Stage_temp` - Temporary tasks
+### ステージオプション
+- `Stage_active` - アクティブタスク
+- `Stage_inactive` - 非アクティブ・保留タスク（デフォルトで非表示）
+- `Stage_someday` - いつか・もしかして タスク
+- `Stage_temp` - 一時的タスク
 
-## Configuration
+## 設定
 
-### Task Recognition Settings
-Configure which tags are recognized for status, stage, and assignee detection:
-- Status Tags: Comma-separated list of status identifiers
-- Stage Tags: Comma-separated list of stage identifiers  
-- Assignee Tags: Comma-separated list of assignee identifiers
-- Exclude Tags: Tasks with these tags will be hidden
+### タスク認識設定
+ステータス、ステージ、担当者の検出に使用するタグを設定：
+- ステータスタグ: ステータス識別子のカンマ区切りリスト
+- ステージタグ: ステージ識別子のカンマ区切りリスト
+- 担当者タグ: 担当者識別子のカンマ区切りリスト
+- 除外タグ: これらのタグを含むタスクは非表示
 
-### API Settings
-- **Auto Fetch**: Automatically fetch new data at regular intervals
-- **Initial Fetch**: Fetch data when the application loads
-- **Fetch Interval**: How often to check for new data (in seconds)
-- **Authentication**: Scrapbox cookie token for private projects
+### API設定
+- **自動取得**: 定期的に新しいデータを自動取得
+- **初回取得**: アプリケーション読み込み時にデータを取得
+- **取得間隔**: 新しいデータをチェックする頻度（秒単位）
+- **認証**: プライベートプロジェクト用のScrapboxクッキートークン
 
-### Export Settings
-- **Filename Format**: Template for exported filenames (supports PROJECT placeholder)
-- **Fetch Before Export**: Update data before exporting changes
-- **Open Import Page**: Automatically open Scrapbox import interface
+### エクスポート設定
+- **ファイル名形式**: エクスポートファイル名のテンプレート（PROJECTプレースホルダーサポート）
+- **エクスポート前取得**: 変更をエクスポートする前にデータを更新
+- **インポートページを開く**: Scrapboxインポートインターフェースを自動的に開く
 
-## Development
+## 開発
 
-### Local Development
-1. Start a local web server in the project directory:
+### ローカル開発
+1. プロジェクトディレクトリでローカルWebサーバーを起動：
    ```bash
    python -m http.server 3000
    ```
-2. For Scrapbox API integration, also run the proxy server:
+2. Scrapbox API連携のためにプロキシサーバーも起動：
    ```bash
    cd server
    python proxy.py
    ```
 
-### File Structure
+### ファイル構造
 ```
-├── index.html          # Main application
+├── index.html          # メインアプリケーション
 ├── css/
-│   └── styles.css     # Application styles
+│   └── styles.css     # アプリケーションスタイル
 ├── js/
-│   ├── main.js        # Application initialization
-│   ├── config.js      # Configuration settings
-│   ├── data.js        # Data processing
-│   ├── ui.js          # UI rendering
-│   ├── filters.js     # Filtering and sorting
-│   ├── export.js      # Export functionality
-│   ├── settings.js    # Settings management
-│   ├── merge-manager.js # Conflict resolution
-│   └── scrapbox-api.js # Scrapbox API integration
+│   ├── main.js        # アプリケーション初期化
+│   ├── config.js      # 設定
+│   ├── data.js        # データ処理
+│   ├── ui.js          # UI描画
+│   ├── filters.js     # フィルタリング＆ソート
+│   ├── export.js      # エクスポート機能
+│   ├── settings.js    # 設定管理
+│   ├── merge-manager.js # 競合解決
+│   └── scrapbox-api.js # Scrapbox API連携
 ├── server/
-│   ├── proxy.py       # CORS proxy for local development
-│   └── app.py         # Flask server for deployment
+│   ├── proxy.py       # ローカル開発用CORSプロキシ
+│   └── app.py         # デプロイ用Flaskサーバー
 └── data/
-    └── sample.json    # Sample data for testing
+    └── sample.json    # テスト用サンプルデータ
 ```
 
-## Browser Compatibility
+## ブラウザ対応
 
-- Modern browsers with ES6+ support
-- Chrome, Firefox, Safari, Edge (recent versions)
-- Mobile browsers on iOS and Android
+- ES6+サポートのモダンブラウザ
+- Chrome、Firefox、Safari、Edge（最新版）
+- iOS・Androidのモバイルブラウザ
 
-## License
+## ライセンス
 
-MIT License - see LICENSE file for details
+MIT License - 詳細はLICENSEファイルをご覧ください
 
-## Contributing
+## 貢献
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+1. リポジトリをフォーク
+2. 機能ブランチを作成
+3. 変更を行う
+4. 十分にテスト
+5. プルリクエストを提出
 
-## Support
+## サポート
 
-If you encounter issues or have questions:
-1. Check the sample data format
-2. Verify your Scrapbox data export format
-3. Open an issue on GitHub with details about your setup
+問題が発生した場合や質問がある場合：
+1. サンプルデータ形式を確認
+2. Scrapboxデータエクスポート形式を確認
+3. セットアップの詳細とともにGitHubでissueを開く
 
 ---
 
-Built with vanilla JavaScript for maximum compatibility and performance.
+最大限の互換性とパフォーマンスのためにバニラJavaScriptで構築。
