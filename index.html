@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosense Taskflow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gray-900 text-gray-100">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <!-- ヘッダーメニュー -->
+        <div class="flex justify-end gap-2 mb-4">
+            <button id="help-button" class="bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white p-2 rounded-lg transition-colors" title="使い方">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </button>
+            <button id="file-upload-button" class="bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white p-2 rounded-lg transition-colors" title="ファイルアップロード">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+            </button>
+            <button id="settings-button" class="bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white p-2 rounded-lg transition-colors" title="設定">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white">Cosense Taskflow</h1>
+            <p class="text-gray-400 mt-2">Cosenseデータを読み込み、タスクの検索、編集、エクスポートができます。</p>
+        </header>
+
+        <main>
+            <div id="file-upload-section" class="mb-4 hidden">
+                <button id="toggle-upload" class="w-full text-left bg-gray-800 hover:bg-gray-700 p-3 rounded-lg transition-colors border border-gray-600 mb-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-300">ファイルアップロード</span>
+                        <svg id="upload-chevron" class="h-5 w-5 text-gray-400 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </button>
+                <div id="drop-zone" class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center bg-gray-800 hover:bg-gray-700 transition-colors cursor-pointer">
+                    <input type="file" id="file-input" class="hidden" accept=".json">
+                    <svg class="mx-auto h-12 w-12 text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <p id="file-info" class="mt-4 text-lg text-gray-400">JSONファイルをここにドラッグ＆ドロップするか、エリアをクリックして選択</p>
+                    <p class="text-xs text-gray-500 mt-1">ファイルはブラウザ内でのみ処理されます</p>
+                </div>
+            </div>
+            
+            <div id="controls-section" class="hidden mb-4">
+                <button id="toggle-controls" class="w-full text-left bg-gray-800 hover:bg-gray-700 p-3 rounded-lg transition-colors border border-gray-600 mb-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-300">フィルター・並び替え</span>
+                        <svg id="controls-chevron" class="h-5 w-5 text-gray-400 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </button>
+                <div id="controls" class="p-4 bg-gray-800 rounded-lg">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div>
+                            <label for="sort-by" class="text-sm font-medium text-gray-300 mr-2">並び替え:</label>
+                            <select id="sort-by" class="bg-gray-700 border border-gray-600 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="smart">スマートソート (推奨)</option>
+                                <option value="updated-desc">更新日 (新しい順)</option>
+                                <option value="updated-asc">更新日 (古い順)</option>
+                                <option value="due-date-asc">期日 (早い順)</option>
+                                <option value="due-date-desc">期日 (遅い順)</option>
+                                <option value="title-asc">タイトル (昇順)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="filter-stem" class="text-sm font-medium text-gray-300 mr-2">プロジェクト:</label>
+                            <select id="filter-stem" class="bg-gray-700 border border-gray-600 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="all">すべて</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="filter-status" class="text-sm font-medium text-gray-300 mr-2">ステータス:</label>
+                            <select id="filter-status" class="bg-gray-700 border border-gray-600 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="all">すべて</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="filter-stage" class="text-sm font-medium text-gray-300 mr-2">ステージ:</label>
+                            <select id="filter-stage" class="bg-gray-700 border border-gray-600 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="all">すべて</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="filter-assignee" class="text-sm font-medium text-gray-300 mr-2">担当者:</label>
+                            <select id="filter-assignee" class="bg-gray-700 border border-gray-600 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="all">すべて</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center pl-2">
+                            <input type="checkbox" id="show-completed" class="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500">
+                            <label for="show-completed" class="ml-2 text-sm font-medium text-gray-300">完了済みを表示</label>
+                        </div>
+                        <div class="flex items-center pl-2">
+                            <input type="checkbox" id="show-before-start" class="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500">
+                            <label for="show-before-start" class="ml-2 text-sm font-medium text-gray-300">開始日前を表示</label>
+                        </div>
+                        <div class="flex items-center pl-2">
+                            <input type="checkbox" id="show-inactive" class="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500">
+                            <label for="show-inactive" class="ml-2 text-sm font-medium text-gray-300">inactiveを表示</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="export-section" class="hidden mb-4 flex justify-between items-center">
+                <button id="fetch-from-api" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">
+                    最新データを取得
+                </button>
+                <button id="export-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">
+                    変更をエクスポート
+                </button>
+            </div>
+
+            <div id="task-board" class="space-y-3"></div>
+            <div id="placeholder" class="text-center py-16 text-gray-500">
+                <p>タスクがここに表示されます。</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- 設定モーダル -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center p-6 border-b border-gray-700">
+                <h2 class="text-xl font-bold text-white">設定</h2>
+                <button id="settings-close" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <!-- 一般設定 -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">一般設定</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="setting-project-name" class="block text-sm font-medium text-gray-300 mb-1">
+                                Scrapboxプロジェクト名
+                            </label>
+                            <input type="text" id="setting-project-name" 
+                                   class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label for="setting-task-icon" class="block text-sm font-medium text-gray-300 mb-1">
+                                タスク認識アイコン名
+                            </label>
+                            <input type="text" id="setting-task-icon" 
+                                   class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="leaves">
+                            <p class="text-xs text-gray-400 mt-1">[*****.icon] の***** 部分</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API設定 -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">API設定</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="setting-auto-fetch" 
+                                   class="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500">
+                            <label for="setting-auto-fetch" class="ml-2 text-sm font-medium text-gray-300">
+                                自動データ取得を有効にする
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" id="setting-initial-fetch" 
+                                   class="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500">
+                            <label for="setting-initial-fetch" class="ml-2 text-sm font-medium text-gray-300">
+                                初回読み込み時にデータを取得
+                            </label>
+                        </div>
+                        
+                        <div>
+                            <button id="clear-backup-cache" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">
+                                キャッシュを手動削除
+                            </button>
+                            <p class="text-xs text-gray-400 mt-1">保存されたバックアップデータをすべて削除します</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="setting-fetch-interval" class="block text-sm font-medium text-gray-300 mb-1">
+                                取得間隔 (秒)
+                            </label>
+                            <input type="number" id="setting-fetch-interval" min="60" max="3600" step="60"
+                                   class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="300">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="setting-auth-token" class="block text-sm font-medium text-gray-300 mb-1">
+                            認証トークン（オプション）
+                        </label>
+                        <input type="password" id="setting-auth-token" 
+                               class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Scrapbox Cookie認証（将来機能）">
+                        <p class="text-xs text-gray-400 mt-1">ページ更新機能で使用予定</p>
+                    </div>
+                    
+                    <div class="flex items-center space-x-3">
+                        <button id="test-connection" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">
+                            接続テスト
+                        </button>
+                        <div id="connection-status" class="text-sm text-gray-400"></div>
+                    </div>
+                </div>
+
+                <!-- タスク認識設定 -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">タスク認識設定</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label for="setting-status-tags" class="block text-sm font-medium text-gray-300 mb-1">
+                                ステータスタグ (カンマ区切り)
+                            </label>
+                            <input type="text" id="setting-status-tags" 
+                                   class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Status_notStarted,Status_inProgress,Status_completed">
+                            <p class="text-xs text-gray-400 mt-1">使用可能なステータスをカンマ区切りで指定</p>
+                        </div>
+                        
+                        <div>
+                            <label for="setting-stage-tags" class="block text-sm font-medium text-gray-300 mb-1">
+                                ステージタグ (カンマ区切り)
+                            </label>
+                            <input type="text" id="setting-stage-tags" 
+                                   class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Stage_active,Stage_inactive,Stage_someday">
+                            <p class="text-xs text-gray-400 mt-1">使用可能なステージをカンマ区切りで指定</p>
+                        </div>
+                        
+                        <div>
+                            <label for="setting-assignee-tags" class="block text-sm font-medium text-gray-300 mb-1">
+                                担当者タグ (カンマ区切り)
+                            </label>
+                            <input type="text" id="setting-assignee-tags" 
+                                   class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Assigned to cak,Assigned to elle">
+                            <p class="text-xs text-gray-400 mt-1">使用可能な担当者をカンマ区切りで指定</p>
+                        </div>
+                        
+                        <div>
+                            <label for="setting-exclude-tags" class="block text-sm font-medium text-gray-300 mb-1">
+                                除外タグ (カンマ区切り)
+                            </label>
+                            <input type="text" id="setting-exclude-tags" 
+                                   class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Exclude">
+                            <p class="text-xs text-gray-400 mt-1">このタグが含まれるページはタスク一覧から除外されます</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- エクスポート設定 -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">エクスポート設定</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="setting-filename-format" class="block text-sm font-medium text-gray-300 mb-1">
+                                ファイル名フォーマット
+                            </label>
+                            <select id="setting-filename-format" 
+                                    class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="YYYY-MM-DD_HH-mm">YYYY-MM-DD_HH-mm</option>
+                                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                <option value="export_YYYY-MM-DD">export_YYYY-MM-DD</option>
+                                <option value="PROJECT-export-YYYY-MM-DD">PROJECT-export-YYYY-MM-DD</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="setting-export-folder" class="block text-sm font-medium text-gray-300 mb-1">
+                                エクスポート先フォルダ
+                            </label>
+                            <input type="text" id="setting-export-folder" 
+                                   class="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="デフォルトはダウンロードフォルダ">
+                            <p class="text-xs text-gray-400 mt-1">今後の機能で使用予定</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="setting-fetch-before-export" 
+                                   class="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500">
+                            <label for="setting-fetch-before-export" class="ml-2 text-sm font-medium text-gray-300">
+                                エクスポート前に最新データを取得
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" id="setting-open-import-page" 
+                                   class="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500">
+                            <label for="setting-open-import-page" class="ml-2 text-sm font-medium text-gray-300">
+                                エクスポート時にScrapboxインポート画面を開く
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-400 ml-6">別ウィンドウでScrapboxのページデータ設定画面が開きます</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between items-center p-6 border-t border-gray-700">
+                <button id="settings-reset" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">
+                    設定をリセット
+                </button>
+                <div class="space-x-3">
+                    <button id="settings-cancel" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">
+                        キャンセル
+                    </button>
+                    <button id="settings-save" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">
+                        保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 使い方モーダル -->
+    <div id="help-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center p-6 border-b border-gray-700">
+                <h2 class="text-xl font-bold text-white">使い方ガイド</h2>
+                <button id="help-close" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <!-- データ取得 -->
+                <div class="space-y-3">
+                    <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">データ取得</h3>
+                    <div class="space-y-2 text-sm text-gray-300">
+                        <p><strong class="text-green-400">最新データを取得ボタン:</strong> 設定されたScrapboxプロジェクトから最新のタスクデータを取得します</p>
+                        <p><strong>Shift+クリック:</strong> 強制更新（新しいバックアップがない場合でも取得）</p>
+                        <p><strong>自動取得:</strong> 設定で有効にすると定期的に新しいバックアップを確認</p>
+                    </div>
+                </div>
+
+                <!-- ファイル操作 -->
+                <div class="space-y-3">
+                    <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">ファイル操作</h3>
+                    <div class="space-y-2 text-sm text-gray-300">
+                        <p><strong class="text-blue-400">📤 ファイルアップロード:</strong> ヘッダーのアップロードボタンからJSONファイルを読み込み</p>
+                        <p><strong class="text-blue-400">変更をエクスポート:</strong> 編集したタスクをJSONファイルとしてダウンロード</p>
+                        <p><strong>ドラッグ&ドロップ:</strong> ファイルアップロード画面で直接ファイルをドロップ可能</p>
+                    </div>
+                </div>
+
+                <!-- 設定 -->
+                <div class="space-y-3">
+                    <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">設定</h3>
+                    <div class="space-y-2 text-sm text-gray-300">
+                        <p><strong class="text-yellow-400">⚙️ 設定画面:</strong> ヘッダーの歯車ボタンから各種設定が可能</p>
+                        <p><strong>プロジェクト設定:</strong> Scrapboxプロジェクト名とタスク認識アイコン</p>
+                        <p><strong>API設定:</strong> 自動取得、初回取得、認証トークンなど</p>
+                        <p><strong>エクスポート設定:</strong> ファイル名形式、取得オプションなど</p>
+                    </div>
+                </div>
+
+                <!-- タスク操作 -->
+                <div class="space-y-3">
+                    <h3 class="text-lg font-semibold text-white border-b border-gray-600 pb-2">タスク操作</h3>
+                    <div class="space-y-2 text-sm text-gray-300">
+                        <p><strong>フィルター:</strong> ステータス、ステージ、担当者で絞り込み可能</p>
+                        <p><strong>ソート:</strong> スマートソート、更新日、期日、タイトル順で並び替え</p>
+                        <p><strong>編集:</strong> タスクカード内で直接ステータスや担当者を変更</p>
+                        <p><strong>リンク:</strong> タスクタイトルクリックでScrapboxページに移動</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end p-6 border-t border-gray-700">
+                <button id="help-ok" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="js/config.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/scrapbox-api.js"></script>
+    <script src="js/merge-manager.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+body {
+    font-family: 'Inter', 'Noto Sans JP', sans-serif;
+}
+
+.task-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.task-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.task-card.is-important {
+    background-color: #312e42; /* A slightly different shade for importance */
+    border-color: #f59e0b; /* amber-500 */
+}
+
+.tag {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.editable-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    border: none;
+    padding: 0.25rem 0.6rem;
+    margin: -0.25rem -0.6rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+}
+
+.editable-select:focus {
+    outline: 2px solid #3b82f6; /* focus:ring-blue-500 */
+}
+
+.assignee-select {
+    text-align: left;
+}
+
+.status-select {
+    text-align: center;
+}
+
+/* レスポンシブ対応 - CSS Media Queries */
+/* 小画面 (512px未満) */
+@media (max-width: 511px) {
+    .task-card {
+        flex-direction: column !important;
+    }
+    
+    .mobile-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .mobile-dates {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    /* 小画面でのみ表示される要素 */
+    .mobile-small-only {
+        display: flex !important;
+    }
+    
+    .mobile-medium-only {
+        display: none !important;
+    }
+    
+    .desktop-only {
+        display: none !important;
+    }
+    
+    /* 小画面専用のコンパクトselect */
+    .mobile-small-only .editable-select {
+        font-size: 9px;
+        padding: 0.125rem 0.25rem;
+        margin: 0;
+        max-width: 100%;
+        border-radius: 0.25rem;
+    }
+    
+    .mobile-small-only .assignee-select {
+        max-width: 48px;
+    }
+    
+    .mobile-small-only .status-select {
+        max-width: 72px;
+    }
+}
+
+/* 中画面 (512px-1024px) */
+@media (min-width: 512px) and (max-width: 1024px) {
+    .task-card {
+        flex-direction: column !important;
+    }
+    
+    .mobile-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .mobile-dates {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    /* 中画面でのみ表示される要素 */
+    .mobile-small-only {
+        display: none !important;
+    }
+    
+    .mobile-medium-only {
+        display: flex !important;
+    }
+    
+    .desktop-only {
+        display: none !important;
+    }
+    
+    /* 中画面専用のselect */
+    .mobile-medium-only .editable-select {
+        font-size: 10px;
+        padding: 0.125rem 0.375rem;
+        margin: 0;
+        max-width: 100%;
+        border-radius: 0.25rem;
+    }
+    
+    .mobile-medium-only .assignee-select {
+        max-width: 60px;
+    }
+    
+    .mobile-medium-only .status-select {
+        max-width: 80px;
+    }
+}
+
+/* デスクトップでのみ表示される要素のデフォルト */
+@media (min-width: 1025px) {
+    .mobile-small-only {
+        display: none !important;
+    }
+    
+    .mobile-medium-only {
+        display: none !important;
+    }
+    
+    .desktop-only {
+        display: flex !important;
+    }
+}
+
+/* ステージ円形表示 */
+.stage-circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.stage-circle:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+}
+
+/* ステージ別の色定義 */
+.stage-active {
+    background-color: #10b981; /* green-500 */
+}
+
+.stage-someday {
+    background-color: #f59e0b; /* amber-500 - waitingと同じ */
+}
+
+.stage-inactive {
+    background-color: #ef4444; /* red-500 */
+}
+
+.stage-temp {
+    background-color: #6b7280; /* gray-500 */
+}
+
+.stage-unknown {
+    background-color: #a855f7; /* purple-500 */
+}
