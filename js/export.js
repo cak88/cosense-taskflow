@@ -16,9 +16,30 @@ function updateTask(taskId, field, value) {
         
         task[field] = newValue;
         task.updated = Math.floor(Date.now() / 1000);
-        renderTasks();
+        
+        // 個別のタスクカードのみを更新
+        updateSingleTaskCard(taskId);
         updateExportButton();
     }
+}
+
+// 単一のタスクカードのみを更新する関数
+function updateSingleTaskCard(taskId) {
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const existingCard = document.querySelector(`[data-task-id="${taskId}"]`);
+    if (!existingCard) {
+        // カードが見つからない場合は全体を再描画
+        refreshTasks();
+        return;
+    }
+    
+    // 新しいカードを作成
+    const newCard = createTaskCard(task);
+    
+    // 既存のカードを新しいカードで置き換え
+    existingCard.parentNode.replaceChild(newCard, existingCard);
 }
 
 function updateExportButton() {

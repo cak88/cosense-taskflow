@@ -5,6 +5,7 @@ const DEFAULT_CONFIG = {
     general: {
         scrapboxProjectName: 'your-project',
         taskIconName: 'leaves'
+        bookmarkUrl: ''
     },
     
     // API設定

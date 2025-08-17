@@ -39,6 +39,14 @@ function populateFilters(tasks) {
 }
 
 function renderTasks() {
+    renderTasksInternal(true);
+}
+
+function refreshTasks() {
+    renderTasksInternal(false);
+}
+
+function renderTasksInternal(shouldSort) {
     taskBoard.innerHTML = '';
     let filteredTasks = [...allTasks];
     
@@ -70,7 +78,8 @@ function renderTasks() {
     }
     if (filterAssignee.value !== 'all') filteredTasks = filteredTasks.filter(t => t.assignedTo === filterAssignee.value);
     
-    filteredTasks.sort((a, b) => {
+    if (shouldSort) {
+        filteredTasks.sort((a, b) => {
         switch (sortBy.value) {
             case 'smart': 
                 // 1. 期限日での比較（期限日なしは最下位）
@@ -130,7 +139,8 @@ function renderTasks() {
             case 'title-asc': return a.title.localeCompare(b.title, 'ja');
             default: return 0;
         }
-    });
+        });
+    }
 
     if (filteredTasks.length === 0) {
          taskBoard.innerHTML = `<div class="text-center py-16 text-gray-500"><p>条件に一致するタスクはありません。</p></div>`;

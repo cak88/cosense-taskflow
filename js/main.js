@@ -34,6 +34,7 @@ const settingsCancel = document.getElementById('settings-cancel');
 const settingsReset = document.getElementById('settings-reset');
 const settingProjectName = document.getElementById('setting-project-name');
 const settingTaskIcon = document.getElementById('setting-task-icon');
+const settingBookmarkUrl = document.getElementById('setting-bookmark-url');
 const settingAutoFetch = document.getElementById('setting-auto-fetch');
 const settingInitialFetch = document.getElementById('setting-initial-fetch');
 const settingFetchInterval = document.getElementById('setting-fetch-interval');
@@ -68,28 +69,40 @@ let allStages = new Set();
 let allAssignees = new Set();
 
 // --- Event Listeners ---
-dropZone.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-blue-500', 'bg-gray-700'); });
-dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-blue-500', 'bg-gray-700'); });
-dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('border-blue-500', 'bg-gray-700');
-    const files = e.dataTransfer.files;
-    if (files.length > 0) { fileInput.files = files; handleFile(files[0]); }
-});
-fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) { handleFile(e.target.files[0]); } });
-[sortBy, filterStatus, filterStage, filterStem, filterAssignee, showCompleted, showBeforeStart, showInactive].forEach(el => el.addEventListener('change', renderTasks));
-exportButton.addEventListener('click', () => {
-    exportJson().catch(error => {
-        console.error('エクスポートエラー:', error);
-        alert(`エクスポートに失敗しました: ${error.message}`);
+// dropZone関連のイベントリスナーは要素が存在する場合のみ設定
+if (dropZone && fileInput) {
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-blue-500', 'bg-gray-700'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-blue-500', 'bg-gray-700'); });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-blue-500', 'bg-gray-700');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) { fileInput.files = files; handleFile(files[0]); }
     });
-});
+}
+if (fileInput) {
+    fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) { handleFile(e.target.files[0]); } });
+}
+
+// フィルター要素のイベントリスナーは存在する要素のみに設定
+[sortBy, filterStatus, filterStage, filterStem, filterAssignee, showCompleted, showBeforeStart, showInactive]
+    .filter(el => el) // null/undefinedを除外
+    .forEach(el => el.addEventListener('change', renderTasks));
+if (exportButton) {
+    exportButton.addEventListener('click', () => {
+        exportJson().catch(error => {
+            console.error('エクスポートエラー:', error);
+            alert(`エクスポートに失敗しました: ${error.message}`);
+        });
+    });
+}
 
 // 設定関連のイベントリスナー
 helpButton?.addEventListener('click', openHelpModal);
 fileUploadButton?.addEventListener('click', toggleFileUploadSection);
 settingsButton?.addEventListener('click', openSettingsModal);
+document.getElementById('bookmark-button')?.addEventListener('click', openBookmark);
 settingsClose?.addEventListener('click', closeSettingsModal);
 settingsCancel?.addEventListener('click', closeSettingsModal);
 settingsSave?.addEventListener('click', saveSettings);
@@ -148,6 +161,32 @@ function closeHelpModal() {
     helpModal.classList.add('hidden');
 }
 
+// ブックマーク機能
+function openBookmark() {
+    const bookmarkUrl = settingsManager.get('general', 'bookmarkUrl');
+    
+    try {
+        window.open(bookmarkUrl, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+        console.error('ブックマーク開けませんでした:', error);
+        showMessage('ブックマークを開けませんでした', 'error');
+    }
+}
+
+// ブックマークボタンの表示/非表示を制御
+function updateBookmarkButtonVisibility() {
+    const bookmarkButton = document.getElementById('bookmark-button');
+    const bookmarkUrl = settingsManager.get('general', 'bookmarkUrl');
+    
+    if (bookmarkButton) {
+        if (bookmarkUrl && bookmarkUrl.trim() !== '') {
+            bookmarkButton.style.display = '';
+        } else {
+            bookmarkButton.style.display = 'none';
+        }
+    }
+}
+
 // 設定モーダル関連の関数
 function openSettingsModal() {
     loadSettingsToModal();
@@ -161,6 +200,7 @@ function closeSettingsModal() {
 function loadSettingsToModal() {
     settingProjectName.value = settingsManager.get('general', 'scrapboxProjectName');
     settingTaskIcon.value = settingsManager.get('general', 'taskIconName');
+    settingBookmarkUrl.value = settingsManager.get('general', 'bookmarkUrl');
     settingAutoFetch.checked = settingsManager.get('api', 'enableAutoFetch');
     settingInitialFetch.checked = settingsManager.get('api', 'enableInitialFetch');
     settingFetchInterval.value = settingsManager.get('api', 'fetchInterval');
@@ -191,7 +231,8 @@ function saveSettings() {
     const newSettings = {
         general: {
             scrapboxProjectName: newProjectName,
-            taskIconName: settingTaskIcon.value.trim() || 'leaves'
+            taskIconName: settingTaskIcon.value.trim() || 'leaves',
+            bookmarkUrl: settingBookmarkUrl.value.trim()
         },
         api: {
             enableAutoFetch: settingAutoFetch.checked,
@@ -238,12 +279,16 @@ function saveSettings() {
     if (allTasks.length > 0) {
         renderTasks();
     }
+    
+    // ブックマークボタンの表示を更新
+    updateBookmarkButtonVisibility();
 }
 
 function resetSettings() {
     if (confirm('設定をリセットしますか？この操作は元に戻せません。')) {
         settingsManager.reset();
         loadSettingsToModal();
+        updateBookmarkButtonVisibility();
         alert('設定をリセットしました');
     }
 }
@@ -445,14 +490,17 @@ async function fetchFromScrapboxAPI(isManualOperation = false) {
 
 // 初期化
 document.addEventListener('DOMContentLoaded', () => {
-    // 初期状態でもエクスポートセクションとコントロールセクションを表示
-    exportSection.classList.remove('hidden');
-    controlsSection.classList.remove('hidden');
+    // 初期状態でもエクスポートセクションとコントロールセクションを表示（要素が存在する場合のみ）
+    if (exportSection) exportSection.classList.remove('hidden');
+    if (controlsSection) controlsSection.classList.remove('hidden');
     
     // プレースホルダーを表示（データがない初期状態）
-    placeholder.classList.remove('hidden');
+    if (placeholder) placeholder.classList.remove('hidden');
     
     updateExportButton();
+    
+    // ブックマークボタンの表示状態を初期化
+    updateBookmarkButtonVisibility();
     
     // エクスポートエリアのAPI取得ボタンにイベントリスナーを追加
     document.getElementById('fetch-from-api')?.addEventListener('click', async (event) => {

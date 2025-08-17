@@ -103,7 +103,7 @@ function createTaskCard(task) {
             <!-- ステージ（CSS円形・サイクリング） -->
             <div class="flex-shrink-0 w-4 flex justify-center" title="${task.stage?.replace('Stage_', '') || 'Unknown'}">
                 <div class="stage-circle ${getStageCircleClass(task.stage)}" 
-                     onclick="updateTask('${task.id}', 'stage', cycleStage('${task.stage}', allStages)); renderTasks();"></div>
+                     onclick="updateTask('${task.id}', 'stage', cycleStage('${task.stage}', allStages));"></div>
             </div>
             
             <!-- 更新日 -->
@@ -146,7 +146,7 @@ function createTaskCard(task) {
             <!-- ステージ（CSS円形・サイクリング） -->
             <div class="flex-shrink-0 w-4 flex justify-center" title="${task.stage?.replace('Stage_', '') || 'Unknown'}">
                 <div class="stage-circle ${getStageCircleClass(task.stage)}" 
-                     onclick="updateTask('${task.id}', 'stage', cycleStage('${task.stage}', allStages)); renderTasks();"></div>
+                     onclick="updateTask('${task.id}', 'stage', cycleStage('${task.stage}', allStages));"></div>
             </div>
             
             <!-- 更新日 -->
@@ -188,7 +188,7 @@ function createTaskCard(task) {
         <div class="desktop-only w-20 text-center ml-4">
             <div class="flex justify-center" title="${task.stage?.replace('Stage_', '') || 'Unknown'}">
                 <div class="stage-circle ${getStageCircleClass(task.stage)}" 
-                     onclick="updateTask('${task.id}', 'stage', cycleStage('${task.stage}', allStages)); renderTasks();"></div>
+                     onclick="updateTask('${task.id}', 'stage', cycleStage('${task.stage}', allStages));"></div>
             </div>
         </div>
         
