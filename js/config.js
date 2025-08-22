@@ -4,7 +4,7 @@ const DEFAULT_CONFIG = {
     // 一般設定
     general: {
         scrapboxProjectName: 'your-project',
-        taskIconName: 'leaves'
+        taskIconName: 'leaves',
         bookmarkUrl: ''
     },
     
