@@ -566,28 +566,21 @@ function refreshTasksFromCache() {
 
 // 個別ページ取得・マージ機能（新規追加）
 async function fetchIndividualPagesAndMerge() {
-    // 1. 変更タスクのページタイトル一覧を取得（仮IDタスクも含む）
+    // 1. 変更タスクのページタイトル一覧を取得
     const changedTaskTitles = getChangedTaskTitles();
-    const tempTaskTitles = getTempTaskTitles(); // 仮IDタスクのタイトルも取得
     
-    // 変更タスクと仮IDタスクをマージ（重複除去）
-    const allTaskTitles = [...new Set([...changedTaskTitles, ...tempTaskTitles])];
-    
-    if (allTaskTitles.length === 0) {
-        showMessage('更新対象のタスクがありません', 'info');
+    if (changedTaskTitles.length === 0) {
+        showMessage('変更されたタスクがありません', 'info');
         return;
     }
     
-    showMessage(`${allTaskTitles.length}件のタスクの最新データを取得中...`, 'info');
+    showMessage(`${changedTaskTitles.length}件の変更タスクの最新データを取得中...`, 'info');
     
     try {
         // 2. 個別ページデータを取得
-        const latestPages = await scrapboxAPI.getMultiplePagesForTaskflow(allTaskTitles);
+        const latestPages = await scrapboxAPI.getMultiplePagesForTaskflow(changedTaskTitles);
         
-        // 3. 仮IDタスクの実際のIDを更新
-        updateTempTaskIds(latestPages);
-        
-        // 4. 最新ページデータを既存キャッシュにマージしてから変更点を適用
+        // 3. 最新ページデータを既存キャッシュにマージしてから変更点を適用
         const mergeResult = mergeManager.mergeWithIndividualPages(latestPages);
         allTasks = mergeResult.tasks;
         
@@ -619,53 +612,6 @@ function getChangedTaskTitles() {
     }).filter(title => title);
 }
 
-// 仮IDタスクのタイトル一覧を取得
-function getTempTaskTitles() {
-    if (!allTasks) return [];
-    
-    return allTasks
-        .filter(task => task.id.startsWith('temp_')) // 仮IDのタスクを抽出
-        .map(task => task.title);
-}
-
-// 仮IDタスクの実際のIDを更新
-function updateTempTaskIds(latestPages) {
-    if (!allTasks || !latestPages) return;
-    
-    // 仮IDタスクを見つける
-    const tempTasks = allTasks.filter(task => task.id.startsWith('temp_'));
-    
-    tempTasks.forEach(tempTask => {
-        // タイトルが一致する実際のページを検索
-        const realPage = latestPages.find(page => page.title === tempTask.title);
-        
-        if (realPage && realPage.id !== tempTask.id) {
-            console.log(`仮IDを更新: ${tempTask.id} → ${realPage.id} (${tempTask.title})`);
-            
-            // 1. IDを更新する前に仮IDを保存
-            const oldTempId = tempTask.id;
-            
-            // 2. MergeManagerの変更履歴も更新
-            const changeRecord = mergeManager.changeHistory.get(oldTempId);
-            if (changeRecord) {
-                // 古い仮IDの履歴を削除して新しいIDで再登録
-                mergeManager.changeHistory.delete(oldTempId);
-                mergeManager.changeHistory.set(realPage.id, changeRecord);
-            }
-            
-            // 3. originalSnapshotも更新
-            const snapshot = mergeManager.originalSnapshot.get(oldTempId);
-            if (snapshot) {
-                mergeManager.originalSnapshot.delete(oldTempId);
-                mergeManager.originalSnapshot.set(realPage.id, snapshot);
-            }
-            
-            // 4. allTasksの該当タスクIDを更新
-            tempTask.id = realPage.id;
-            tempTask.updated = realPage.updated;
-        }
-    });
-}
 
 function updateOriginalJsonWithMergedPages(updatedPages) {
     // originalJsonの該当ページを最新データで更新
@@ -673,27 +619,9 @@ function updateOriginalJsonWithMergedPages(updatedPages) {
     if (!originalJson || !originalJson.pages) return;
     
     updatedPages.forEach(updatedPage => {
-        // 1. 実際のIDで既存ページを検索
         const existingPageIndex = originalJson.pages.findIndex(page => page.id === updatedPage.id);
-        
         if (existingPageIndex !== -1) {
-            // 既存ページの更新
             originalJson.pages[existingPageIndex] = updatedPage;
-        } else {
-            // 2. 仮IDがあるかチェック（タイトルでマッチング）
-            const tempPageIndex = originalJson.pages.findIndex(page => 
-                page.id.startsWith('temp_') && page.title === updatedPage.title
-            );
-            
-            if (tempPageIndex !== -1) {
-                // 仮IDページを実際のページで置き換え
-                console.log(`originalJsonの仮IDページを更新: ${originalJson.pages[tempPageIndex].id} → ${updatedPage.id} (${updatedPage.title})`);
-                originalJson.pages[tempPageIndex] = updatedPage;
-            } else {
-                // 3. 新しいページとして追加
-                console.log(`originalJsonに新しいページを追加: ${updatedPage.id} (${updatedPage.title})`);
-                originalJson.pages.push(updatedPage);
-            }
         }
     });
 }
