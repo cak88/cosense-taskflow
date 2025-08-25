@@ -163,6 +163,77 @@ class MergeManager {
         return true;
     }
 
+    // 個別ページマージ機能（新機能）
+    mergeWithIndividualPages(updatedPages) {
+        if (!Array.isArray(updatedPages) || updatedPages.length === 0) {
+            return { tasks: allTasks || [], conflicts: [] };
+        }
+
+        console.log(`MergeManager: ${updatedPages.length}件の個別ページをマージ開始`);
+
+        const conflicts = [];
+        
+        // 1. 既存のallTasksから更新されたページに対応するタスクを見つける
+        const pageIdToTaskMap = new Map();
+        (allTasks || []).forEach(task => {
+            pageIdToTaskMap.set(task.id, task);
+        });
+
+        // 2. 更新されたページデータから新しいタスクデータを作成
+        const updatedTasks = updatedPages.map(pageData => parseTask(pageData));
+        
+        // 3. 既存のallTasksを更新
+        updatedTasks.forEach(updatedTask => {
+            const existingTaskIndex = allTasks.findIndex(task => task.id === updatedTask.id);
+            if (existingTaskIndex !== -1) {
+                // 既存タスクの更新
+                const originalData = this.originalSnapshot.get(updatedTask.id);
+                const changeRecord = this.changeHistory.get(updatedTask.id);
+                
+                if (originalData && changeRecord) {
+                    // 競合チェック
+                    const conflictFields = this.detectConflicts(updatedTask, originalData, changeRecord);
+                    
+                    if (conflictFields.length > 0) {
+                        conflicts.push({
+                            taskId: updatedTask.id,
+                            taskTitle: updatedTask.title,
+                            conflictFields: conflictFields,
+                            localChanges: changeRecord.changes
+                        });
+                    }
+                    
+                    // ローカル変更を最新データに適用
+                    this.applyChangesToTask(updatedTask, changeRecord.changes);
+                }
+                
+                // タスクを更新
+                allTasks[existingTaskIndex] = updatedTask;
+                
+                // 元データスナップショットを更新
+                this.originalSnapshot.set(updatedTask.id, {
+                    status: updatedTask.status,
+                    stage: updatedTask.stage,
+                    assignedTo: updatedTask.assignedTo,
+                    updated: updatedTask.updated
+                });
+            } else {
+                // 新しいタスクの追加（通常は発生しないが安全のため）
+                allTasks.push(updatedTask);
+                this.originalSnapshot.set(updatedTask.id, {
+                    status: updatedTask.status,
+                    stage: updatedTask.stage,
+                    assignedTo: updatedTask.assignedTo,
+                    updated: updatedTask.updated
+                });
+            }
+        });
+        
+        console.log(`MergeManager: 個別ページマージ完了 - ${updatedTasks.length}件更新、${conflicts.length}件の競合`);
+        
+        return { tasks: allTasks, conflicts: conflicts };
+    }
+
     // デバッグ用：現在の状態を表示
     debugPrint() {
         console.log('=== MergeManager Debug Info ===');

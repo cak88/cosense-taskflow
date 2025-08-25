@@ -458,26 +458,24 @@ async function fetchFromScrapboxAPI(isManualOperation = false) {
             return;
         }
         
-        // バックアップリストをチェックして新しいバックアップがあるかを確認
-        if (allTasks.length > 0) {
-            const hasNew = await scrapboxAPI.hasNewBackup();
-            if (!hasNew) {
-                hideLoadingMessage();
-                showMessage('最新のデータは既に取得済みです', 'info');
-                return;
-            }
+        // 2段階同期：バックアップ優先 + 個別ページ取得
+        const hasNewBackup = await scrapboxAPI.hasNewBackup();
+        
+        if (hasNewBackup || allTasks.length === 0) {
+            // 新しいバックアップがあれば取得してマージ（既存処理）
+            const scrapboxData = await scrapboxAPI.getProjectData();
+            const convertedData = scrapboxAPI.convertToVisualizerFormat(scrapboxData);
+            
+            originalJson = convertedData;
+            processCosenseData(convertedData);
+            
+            showMessage(`新しいバックアップから ${scrapboxData.pages.length} 件を取得`, 'success');
+        } else {
+            // 新しいバックアップがなければ個別ページ取得してマージ（新機能）
+            await fetchIndividualPagesAndMerge();
         }
         
-        // データを取得
-        const scrapboxData = await scrapboxAPI.getProjectData();
-        const convertedData = scrapboxAPI.convertToVisualizerFormat(scrapboxData);
-        
-        // 既存のデータ処理関数を使用
-        originalJson = convertedData;
-        processCosenseData(convertedData);
-        
         hideLoadingMessage();
-        showMessage(`Scrapboxから ${scrapboxData.pages.length} 件のページを取得しました`, 'success');
         
     } catch (error) {
         console.error('ScrapboxAPI取得エラー:', error);
@@ -532,3 +530,64 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000); // 初回取得後に開始するよう少し遅らせる
     }
 });
+
+// 個別ページ取得・マージ機能（新規追加）
+async function fetchIndividualPagesAndMerge() {
+    // 1. 変更タスクのページタイトル一覧を取得
+    const changedTaskTitles = getChangedTaskTitles();
+    
+    if (changedTaskTitles.length === 0) {
+        showMessage('変更されたタスクがありません', 'info');
+        return;
+    }
+    
+    showMessage(`${changedTaskTitles.length}件の変更タスクの最新データを取得中...`, 'info');
+    
+    try {
+        // 2. 個別ページデータを取得
+        const latestPages = await scrapboxAPI.getMultiplePagesForTaskflow(changedTaskTitles);
+        
+        // 3. 最新ページデータを既存キャッシュにマージしてから変更点を適用
+        const mergeResult = mergeManager.mergeWithIndividualPages(latestPages);
+        allTasks = mergeResult.tasks;
+        
+        // 4. 競合があればアラート表示
+        if (mergeResult.conflicts.length > 0) {
+            showConflictAlert(mergeResult.conflicts);
+        }
+        
+        // 5. originalJsonも更新（エクスポート用の整合性維持）
+        updateOriginalJsonWithMergedPages(latestPages);
+        
+        // 6. UI再描画
+        renderTasks();
+        
+        showMessage(`${latestPages.length}件の最新データをマージしました`, 'success');
+        
+    } catch (error) {
+        console.error('個別ページ取得・マージエラー:', error);
+        showMessage(`個別ページ取得に失敗しました: ${error.message}`, 'error');
+    }
+}
+
+function getChangedTaskTitles() {
+    // modifiedTaskIdsからページタイトル一覧を作成
+    const changedTaskIds = mergeManager.getModifiedTaskIds();
+    return Array.from(changedTaskIds).map(taskId => {
+        const task = allTasks.find(t => t.id === taskId);
+        return task ? task.title : null;
+    }).filter(title => title);
+}
+
+function updateOriginalJsonWithMergedPages(updatedPages) {
+    // originalJsonの該当ページを最新データで更新
+    // エクスポート時の整合性を保つため
+    if (!originalJson || !originalJson.pages) return;
+    
+    updatedPages.forEach(updatedPage => {
+        const existingPageIndex = originalJson.pages.findIndex(page => page.id === updatedPage.id);
+        if (existingPageIndex !== -1) {
+            originalJson.pages[existingPageIndex] = updatedPage;
+        }
+    });
+}
