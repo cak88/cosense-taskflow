@@ -160,6 +160,9 @@ async function exportJson() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
+    // エクスポート成功後にoriginalJsonを更新（変更を確定）
+    updateOriginalJsonAfterExport(changedTaskIds, taskMap);
+    
     // エクスポート後もIDリストは保持（累積変更のため）
     // modifiedTaskIds.clear(); // コメントアウト
     updateExportButton();

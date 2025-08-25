@@ -630,3 +630,67 @@ function updateOriginalJsonWithMergedPages(updatedPages) {
         }
     });
 }
+
+// エクスポート成功後にoriginalJsonを更新（変更確定）
+function updateOriginalJsonAfterExport(changedTaskIds, taskMap) {
+    if (!originalJson || !originalJson.pages) return;
+    
+    console.log(`originalJsonを更新: ${changedTaskIds.size}件の変更を確定`);
+    
+    // 変更されたページをoriginalJsonに反映
+    originalJson.pages.forEach(page => {
+        if (changedTaskIds.has(page.id) && taskMap.has(page.id)) {
+            const updatedTask = taskMap.get(page.id);
+            
+            // ページのupdatedタイムスタンプを更新
+            page.updated = updatedTask.updated;
+            
+            // ページの行を更新（エクスポート処理と同じロジック）
+            page.lines = page.lines.map(line => {
+                let newLine = line;
+                
+                // ステータス更新
+                const oldStatusRegex = /\[Status_[^\]]*\]/g;
+                const newStatus = `[${updatedTask.status || 'Status_'}]`;
+                if (line.match(oldStatusRegex)) {
+                    newLine = newLine.replace(oldStatusRegex, newStatus);
+                } else if (!page.lines.some(l => l.match(oldStatusRegex))) {
+                    const taskIconPattern = settingsManager.getTaskIconPattern();
+                    if (newLine.includes(taskIconPattern)) {
+                        newLine += ` ${newStatus}`;
+                    }
+                }
+
+                // ステージ更新
+                const oldStageRegex = /\[Stage_[^\]]*\]/g;
+                const newStage = `[${updatedTask.stage || 'Stage_'}]`;
+                if (line.match(oldStageRegex)) {
+                    newLine = newLine.replace(oldStageRegex, newStage);
+                } else if (!page.lines.some(l => l.match(oldStageRegex))) {
+                    if (newLine.includes('[Status_')) {
+                        newLine += ` ${newStage}`;
+                    }
+                }
+
+                // アサイン先更新
+                const oldAssigneeRegex = /\[Assigned to [^\]]*\]|Assigned to \[[^\]]*\]/g;
+                const newAssignee = `[${updatedTask.assignedTo || 'Assigned to '}]`;
+                if (line.match(oldAssigneeRegex)) {
+                    newLine = newLine.replace(oldAssigneeRegex, newAssignee);
+                } else if (!page.lines.some(l => l.match(oldAssigneeRegex))) {
+                    if (newLine.includes('[stem.icon]')) {
+                        newLine += ` ${newAssignee}`;
+                    }
+                }
+                
+                return newLine.trim();
+            });
+            
+            // キャッシュも更新（永続化）
+            scrapboxAPI.updateCachedPage(page);
+        }
+    });
+    
+    // MergeManagerのスナップショットを更新（変更を確定）
+    mergeManager.updateSnapshotsAfterExport(Array.from(changedTaskIds));
+}

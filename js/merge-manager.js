@@ -234,6 +234,27 @@ class MergeManager {
         return { tasks: allTasks, conflicts: conflicts };
     }
 
+    // エクスポート後にスナップショットを更新（変更確定）
+    updateSnapshotsAfterExport(exportedTaskIds) {
+        exportedTaskIds.forEach(taskId => {
+            const task = allTasks.find(t => t.id === taskId);
+            if (task) {
+                // 元データスナップショットを現在の値に更新
+                this.originalSnapshot.set(taskId, {
+                    status: task.status,
+                    stage: task.stage,
+                    assignedTo: task.assignedTo,
+                    updated: task.updated
+                });
+                
+                // 変更履歴をクリア（確定したため）
+                this.changeHistory.delete(taskId);
+            }
+        });
+        
+        console.log(`MergeManager: ${exportedTaskIds.length}件のスナップショットを更新し、変更履歴をクリア`);
+    }
+
     // デバッグ用：現在の状態を表示
     debugPrint() {
         console.log('=== MergeManager Debug Info ===');
