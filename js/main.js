@@ -293,17 +293,13 @@ function resetSettings() {
     }
 }
 
-// 競合アラート表示
+// 競合アラート表示（自動解決）
 function showConflictAlert(conflicts) {
     const taskTitles = conflicts.map(c => c.taskTitle).join(', ');
-    const message = `以下のタスクにコンフリクトが発生しました、変更を行ってもよろしいですか？\n\n${taskTitles}`;
     
-    if (confirm(message)) {
-        mergeManager.resolveConflicts(conflicts, 'local');
-        showMessage('✅ 競合を解決し、ローカルの変更を優先しました', 'success');
-    } else {
-        showMessage('❌ マージがキャンセルされました', 'error');
-    }
+    // 自動的にローカル優先で解決（確認ダイアログなし）
+    mergeManager.resolveConflicts(conflicts, 'local');
+    showMessage(`✅ ${conflicts.length}件の競合を自動解決しました (${taskTitles}) - Taskflow変更を優先`, 'success');
 }
 
 // メッセージ表示関数
