@@ -621,7 +621,12 @@ function updateOriginalJsonWithMergedPages(updatedPages) {
     updatedPages.forEach(updatedPage => {
         const existingPageIndex = originalJson.pages.findIndex(page => page.id === updatedPage.id);
         if (existingPageIndex !== -1) {
+            // 既存ページの更新
             originalJson.pages[existingPageIndex] = updatedPage;
+        } else {
+            // 新しいページとして追加（バックアップ後に作成されたページ対応）
+            console.log(`originalJsonに新しいページを追加: ${updatedPage.id} (${updatedPage.title})`);
+            originalJson.pages.push(updatedPage);
         }
     });
 }
