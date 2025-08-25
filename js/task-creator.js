@@ -254,8 +254,11 @@ class TaskCreator {
         // 自動的にクリップボードにコピー
         this.copyToClipboardInternal(taskText);
         
+        // 新機能: キャッシュにタスクデータを追加
+        this.addTaskToCache(formData, taskText);
+        
         // 成功メッセージを一時的に表示
-        this.showMessage('タスクを生成し、クリップボードにコピーしました', 'success');
+        this.showMessage('タスクを生成し、クリップボードにコピーしました。メインページに反映されます。', 'success');
     }
 
     // フォームデータを取得
@@ -450,6 +453,72 @@ class TaskCreator {
                 }
             }, 300);
         }, 3000);
+    }
+
+    // 新規メソッド: 生成したタスクデータをキャッシュに追加
+    addTaskToCache(formData, taskText) {
+        try {
+            // scrapboxAPIを初期化（設定からプロジェクト名を取得）
+            if (typeof scrapboxAPI !== 'undefined') {
+                const config = this.settingsManager.loadConfig();
+                const projectName = config.general.scrapboxProjectName;
+                const authToken = config.api.authToken;
+                
+                if (!projectName) {
+                    console.warn('TaskCreator: プロジェクト名が設定されていません');
+                    return;
+                }
+                
+                scrapboxAPI.initialize(projectName, authToken);
+                console.log('TaskCreator: scrapboxAPI初期化完了', projectName);
+            }
+            
+            // 仮のページIDを生成（実際のページが作成されるまでの暫定）
+            const tempPageId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            
+            // タスクテキストを行配列に変換
+            const lines = taskText.split('\n').filter(line => line.trim());
+            
+            // Taskflow形式のページデータを作成
+            const newPageData = {
+                id: tempPageId,
+                title: formData.title,
+                updated: Math.floor(Date.now() / 1000),
+                lines: lines
+            };
+            
+            // キャッシュに追加（scrapbox-api.jsのaddPageToCacheを使用）
+            if (typeof scrapboxAPI !== 'undefined') {
+                scrapboxAPI.addPageToCache(newPageData);
+                console.log('TaskCreator: 新しいタスクをキャッシュに追加', newPageData);
+                
+                // メインページにタスクが追加されたことを通知
+                this.notifyMainPageToRefresh();
+            }
+            
+        } catch (error) {
+            console.warn('TaskCreator: キャッシュ追加エラー:', error);
+            // エラーが発生してもタスク生成は成功として扱う
+        }
+    }
+
+    // メインページに更新通知を送信
+    notifyMainPageToRefresh() {
+        try {
+            // 同一オリジンの場合はwindow.postMessageで通信
+            if (window.opener && !window.opener.closed) {
+                window.opener.postMessage({
+                    type: 'TASK_CREATED',
+                    timestamp: Date.now()
+                }, window.location.origin);
+            }
+            
+            // localStorage経由でも通知（フォールバック）
+            localStorage.setItem('taskflow_task_created', Date.now().toString());
+            
+        } catch (error) {
+            console.warn('TaskCreator: メインページ通知エラー:', error);
+        }
     }
 }
 

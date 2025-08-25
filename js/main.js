@@ -531,6 +531,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// タスク作成ページとメインページの連携
+window.addEventListener('message', (event) => {
+    if (event.data.type === 'TASK_CREATED') {
+        console.log('TaskCreator: 新しいタスクが作成されました');
+        refreshTasksFromCache();
+    }
+});
+
+// localStorage変更の監視（フォールバック）
+window.addEventListener('storage', (event) => {
+    if (event.key === 'taskflow_task_created') {
+        console.log('TaskCreator: localStorage経由でタスク作成を検知');
+        refreshTasksFromCache();
+    }
+});
+
+// キャッシュからタスクを再読み込み
+function refreshTasksFromCache() {
+    try {
+        // 最新のキャッシュデータを取得
+        const latestCacheKey = scrapboxAPI.getLatestCacheKey();
+        if (latestCacheKey) {
+            const cacheData = JSON.parse(localStorage.getItem(latestCacheKey));
+            if (cacheData && cacheData.data) {
+                processCosenseData(cacheData.data);
+                showMessage('新しいタスクが追加されました', 'success');
+            }
+        }
+    } catch (error) {
+        console.warn('キャッシュからのタスク更新エラー:', error);
+    }
+}
+
 // 個別ページ取得・マージ機能（新規追加）
 async function fetchIndividualPagesAndMerge() {
     // 1. 変更タスクのページタイトル一覧を取得
