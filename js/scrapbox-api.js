@@ -450,6 +450,150 @@ class ScrapboxAPI {
             return { count: 0, keys: [], enabled: true };
         }
     }
+
+    // 単一ページ取得（Taskflow形式に変換）
+    async getPageForTaskflow(pageTitle) {
+        if (!this.projectName) {
+            throw new Error('プロジェクト名が設定されていません');
+        }
+
+        const encodedTitle = encodeURIComponent(pageTitle);
+        const url = this.baseUrl.includes('/api/scrapbox') 
+            ? `${this.baseUrl}/pages/${this.projectName}/${encodedTitle}`
+            : `${this.baseUrl}/pages/${this.projectName}/${encodedTitle}`;
+        
+        try {
+            const headers = {
+                'Accept': 'application/json',
+            };
+            
+            // 認証トークンがある場合はAuthorizationヘッダーに追加
+            if (this.cookieToken) {
+                headers['Authorization'] = `Bearer ${this.cookieToken}`;
+            }
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: headers
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    console.warn(`ページが見つかりません: ${pageTitle}`);
+                    return null;
+                }
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const pageData = await response.json();
+            return this.convertPageToTaskflowFormat(pageData);
+            
+        } catch (error) {
+            console.error(`個別ページ取得エラー (${pageTitle}):`, error);
+            throw new Error(`ページの取得に失敗しました: ${error.message}`);
+        }
+    }
+
+    // 複数ページを効率的に取得（レート制限考慮）
+    async getMultiplePagesForTaskflow(pageTitles) {
+        if (!Array.isArray(pageTitles) || pageTitles.length === 0) {
+            return [];
+        }
+
+        const results = [];
+        const BATCH_SIZE = 5; // レート制限対策
+        const DELAY_MS = 200; // リクエスト間隔
+
+        console.log(`ScrapboxAPI: ${pageTitles.length}件のページを個別取得開始`);
+
+        for (let i = 0; i < pageTitles.length; i += BATCH_SIZE) {
+            const batch = pageTitles.slice(i, i + BATCH_SIZE);
+            
+            // バッチ内は並行処理
+            const batchPromises = batch.map(title => 
+                this.getPageForTaskflow(title).catch(error => {
+                    console.warn(`ページ取得スキップ: ${title} - ${error.message}`);
+                    return null; // エラーの場合はnullを返してスキップ
+                })
+            );
+            
+            const batchResults = await Promise.all(batchPromises);
+            results.push(...batchResults.filter(result => result !== null));
+            
+            // 次のバッチまで少し待機（レート制限対策）
+            if (i + BATCH_SIZE < pageTitles.length) {
+                await new Promise(resolve => setTimeout(resolve, DELAY_MS));
+            }
+        }
+
+        console.log(`ScrapboxAPI: ${results.length}/${pageTitles.length}件のページ取得完了`);
+        return results;
+    }
+
+    // PageResponseをTaskflow形式に変換
+    convertPageToTaskflowFormat(pageData) {
+        // linesは {id, text, userId, created, updated}[] 形式
+        const lines = pageData.lines ? pageData.lines.map(line => line.text) : [pageData.title];
+
+        return {
+            id: pageData.id,
+            title: pageData.title,
+            updated: pageData.updated,
+            lines: lines
+        };
+    }
+
+    // 特定ページのキャッシュを更新
+    updateCachedPage(pageData) {
+        // 最新のバックアップキャッシュを取得
+        const latestCacheKey = this.getLatestCacheKey();
+        if (!latestCacheKey) return;
+
+        try {
+            const cacheData = JSON.parse(localStorage.getItem(latestCacheKey));
+            if (cacheData && cacheData.data && cacheData.data.pages) {
+                // 該当ページを更新
+                const pageIndex = cacheData.data.pages.findIndex(p => p.id === pageData.id);
+                if (pageIndex !== -1) {
+                    cacheData.data.pages[pageIndex] = pageData;
+                    localStorage.setItem(latestCacheKey, JSON.stringify(cacheData));
+                    console.log(`キャッシュ更新: ${pageData.title}`);
+                }
+            }
+        } catch (error) {
+            console.warn('キャッシュ更新エラー:', error);
+        }
+    }
+
+    // 新しいページをキャッシュに追加
+    addPageToCache(pageData) {
+        // 最新のバックアップキャッシュを取得
+        const latestCacheKey = this.getLatestCacheKey();
+        if (!latestCacheKey) return;
+
+        try {
+            const cacheData = JSON.parse(localStorage.getItem(latestCacheKey));
+            if (cacheData && cacheData.data && cacheData.data.pages) {
+                // 重複チェック
+                const existingPage = cacheData.data.pages.find(p => p.id === pageData.id);
+                if (!existingPage) {
+                    cacheData.data.pages.push(pageData);
+                    localStorage.setItem(latestCacheKey, JSON.stringify(cacheData));
+                    console.log(`キャッシュ追加: ${pageData.title}`);
+                }
+            }
+        } catch (error) {
+            console.warn('キャッシュ追加エラー:', error);
+        }
+    }
+
+    // 最新のキャッシュキーを取得
+    getLatestCacheKey() {
+        const keys = Object.keys(localStorage);
+        const cachePrefix = `scrapbox_backup_${this.projectName}_`;
+        const cacheKeys = keys.filter(key => key.startsWith(cachePrefix));
+        return cacheKeys.sort().pop() || null;
+    }
 }
 
 // グローバルインスタンス
