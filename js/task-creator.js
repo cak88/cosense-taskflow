@@ -99,7 +99,7 @@ class TaskCreator {
         // 最新のバックアップキャッシュを探す
         const keys = Object.keys(localStorage);
         const config = this.settingsManager.loadConfig();
-        const projectName = config.general.scrapboxProjectName || 'cakt';
+        const projectName = config.general.scrapboxProjectName || 'your-project';
         
         // そのプロジェクトの最新バックアップキャッシュを取得
         const cacheKeys = keys.filter(key => key.startsWith(`scrapbox_backup_${projectName}_`));
@@ -120,12 +120,12 @@ class TaskCreator {
         }
 
         // さらなるフォールバック: 従来の方法
-        const dataKeys = keys.filter(key => key.startsWith('cakt-visualizer-data-'));
+        const dataKeys = keys.filter(key => key.startsWith('visualizer-data-'));
         if (dataKeys.length > 0) {
             const latestKey = dataKeys.sort().pop();
             const data = JSON.parse(localStorage.getItem(latestKey));
             if (data && data.pages) {
-                console.log('TaskCreator: cakt-visualizer-dataからプロジェクト名を抽出');
+                console.log('TaskCreator: visualizer-dataからプロジェクト名を抽出');
                 this.extractProjectsFromPages(data.pages);
             }
         }
@@ -380,7 +380,7 @@ class TaskCreator {
     // 新規ページ作成
     createNewPage() {
         const config = this.settingsManager.loadConfig();
-        const projectName = config.general.scrapboxProjectName || 'cakt';
+        const projectName = config.general.scrapboxProjectName || 'your-project';
         const newPageUrl = `https://scrapbox.io/${projectName}/new`;
         
         try {
